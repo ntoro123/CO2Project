@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.web;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
@@ -18,6 +19,7 @@ import androidx.fragment.app.Fragment;
 import androidx.preference.PreferenceManager;
 
 import com.example.myapplication.R;
+import com.example.myapplication.TimerService;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -29,6 +31,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
@@ -48,12 +51,13 @@ public class web_fragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
+    private TextView debug;
     private WebView webView;
     private TextView clock;
     private final long startTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
     private final long interval = 1000; // 1 second in milliseconds
     private CountDownTimer countDownTimer;
+    ArrayList<String> list = new ArrayList<>();
     public web_fragment() {
         // Required empty public constructor
 
@@ -83,7 +87,9 @@ public class web_fragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
+
         View rootView = inflater.inflate(R.layout.fragment_web_fragment,container,false);
+        debug = rootView.findViewById(R.id.TestView);
         webView = rootView.findViewById(R.id.web);
         clock = rootView.findViewById(R.id.Test_text);
         preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
@@ -92,11 +98,21 @@ public class web_fragment extends Fragment {
         webSettings.setJavaScriptEnabled(true);
 
         // Set a WebViewClient to handle page navigation
-        String query = "android studio";
+        list.add("travel");
+        list.add("food");
+        list.add("home");
+        list.add("work");
+        list.add("cleaning up");
+
+        int index = (int)(Math.random() * (list.size() - 1));
+        String query = "Tips reduce carbon footprint " + list.get(index);
+        debug.setText("Lucky number: " + index);
         loadUrlFromGoogle(query);
+
 
         // Load a default URL in the WebView
         webView.loadUrl("https://www.google.com");
+
 
         clock = rootView.findViewById(R.id.Test_text);
 
@@ -108,6 +124,8 @@ public class web_fragment extends Fragment {
     }
 
     public void startTimer(long milliseconds) {
+        Intent intent = new Intent(getActivity(), TimerService.class);
+        getActivity().startService(intent);
         new CountDownTimer(milliseconds, interval) {
 
             public void onTick(long millisUntilFinished) {
@@ -120,6 +138,7 @@ public class web_fragment extends Fragment {
             }
 
             public void onFinish() {
+
                 preferences.edit().putLong("timeLeft", startTime).apply();
                 startTimer(preferences.getLong("timeLeft",startTime));
             }
