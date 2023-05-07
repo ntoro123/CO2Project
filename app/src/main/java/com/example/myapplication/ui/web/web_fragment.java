@@ -1,5 +1,6 @@
 package com.example.myapplication.ui.web;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
@@ -34,27 +35,15 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
-
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link web_fragment#newInstance} factory method to
- * create an instance of this fragment.
- */
 public class web_fragment extends Fragment {
 
-    private SharedPreferences preferences;
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private SharedPreferences qpref;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
+    private SharedPreferences preferences;
     private TextView debug;
     private WebView webView;
     private TextView clock;
-    private final long startTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    private final long startTime = 10000; // 24 hours in milliseconds
     private final long interval = 1000; // 1 second in milliseconds
     private CountDownTimer countDownTimer;
     ArrayList<String> list = new ArrayList<>();
@@ -64,22 +53,9 @@ public class web_fragment extends Fragment {
     }
 
 
-    public static web_fragment newInstance(String param1, String param2) {
-        web_fragment fragment = new web_fragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
-        }
 
     }
 
@@ -93,6 +69,8 @@ public class web_fragment extends Fragment {
         webView = rootView.findViewById(R.id.web);
         clock = rootView.findViewById(R.id.Test_text);
         preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        qpref = getActivity().getPreferences(Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
         // Enable JavaScript in the WebView
         WebSettings webSettings = webView.getSettings();
         webSettings.setJavaScriptEnabled(true);
@@ -103,29 +81,33 @@ public class web_fragment extends Fragment {
         list.add("home");
         list.add("work");
         list.add("cleaning up");
+        list.add("driving");
+        list.add("cars");
 
-        int index = (int)(Math.random() * (list.size() - 1));
-        String query = "Tips reduce carbon footprint " + list.get(index);
-        debug.setText("Lucky number: " + index);
+        String query = qpref.getString("key", "Carbon Footprint Reducing Tips");
+
         loadUrlFromGoogle(query);
-
 
         // Load a default URL in the WebView
         webView.loadUrl("https://www.google.com");
 
 
         clock = rootView.findViewById(R.id.Test_text);
-
         long timeLeft = preferences.getLong("timeLeft", startTime);
-        startTimer(timeLeft);
 
+        //----------------------------------------------------------------import bit to modify because this is just for testing v ------
+        //startTimer(timeLeft);
+        editor.putLong("timeLeft", startTime);
+        editor.apply();
+        preferences.edit().putLong("timeLeft", startTime).apply();
+        startTimer(startTime);
+        //------------------------------------------------------------------------------------------------------------------------------
 
         return rootView;
     }
 
     public void startTimer(long milliseconds) {
-        Intent intent = new Intent(getActivity(), TimerService.class);
-        getActivity().startService(intent);
+
         new CountDownTimer(milliseconds, interval) {
 
             public void onTick(long millisUntilFinished) {
@@ -138,7 +120,13 @@ public class web_fragment extends Fragment {
             }
 
             public void onFinish() {
-
+                SharedPreferences.Editor editor = qpref.edit();
+                int index = (int)(Math.random() * (list.size() - 1));
+                String query = "Tips reduce carbon footprint " + list.get(index);
+                debug.setText("Lucky number: " + index);
+                loadUrlFromGoogle(query);
+                editor.putString("key", query);
+                editor.apply();
                 preferences.edit().putLong("timeLeft", startTime).apply();
                 startTimer(preferences.getLong("timeLeft",startTime));
             }
@@ -147,7 +135,7 @@ public class web_fragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        countDownTimer.cancel();
+
     }
 
 

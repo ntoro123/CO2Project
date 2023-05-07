@@ -10,7 +10,7 @@ import androidx.annotation.Nullable;
 import androidx.preference.PreferenceManager;
 
 public class TimerService extends Service {
-    private final long startTime = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
+    private final long startTime = 10000; // 24 hours in milliseconds
     private final long interval = 1000; // 1 second in milliseconds
     private CountDownTimer countDownTimer;
     private SharedPreferences preferences;

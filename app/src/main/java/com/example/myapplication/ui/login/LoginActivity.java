@@ -21,6 +21,7 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthUserCollisionException;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.SignInMethodQueryResult;
 
@@ -32,7 +33,7 @@ import com.google.firebase.auth.SignInMethodQueryResult;
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private SharedPreferences mPrefs;
+    private static SharedPreferences mPrefs;
     private TextView error;
     private EditText mEmailField;
     private EditText mPasswordField;
@@ -48,10 +49,15 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState); // Call super.onCreate() first
         setContentView(R.layout.activity_login);
-
-        // check if the user has already logged in before
-
         mAuth = FirebaseAuth.getInstance();
+
+        FirebaseUser currentUser = mAuth.getCurrentUser();
+        if (currentUser != null) {
+            // User is already authenticated, start MainActivity
+            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+            finish();
+            return;
+        }
 
         mEmailField = findViewById(R.id.email);
         mPasswordField = findViewById(R.id.password);
@@ -62,24 +68,29 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String email = mEmailField.getText().toString();
                 String password = mPasswordField.getText().toString();
-
+                if (email.isEmpty() || password.isEmpty())
+                {
+                    error.setText("Please enter your email and password");
+                    return;
+                }
                 mAuth.signInWithEmailAndPassword(email, password)
-                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
-                                    FirebaseUser user = mAuth.getCurrentUser();
-                                    createUserInFirebase(user);
-                                    // navigate to the main activity on successful login
-                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                    finish();
-                                } else {
-                                    error.setText("Email, Username, or Password incorrect. Please try again.");
-                                    // handle login failure
+                            .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                @Override
+                                public void onComplete(Task<AuthResult> task) {
+                                    if (task.isSuccessful()) {
+                                        FirebaseUser user = mAuth.getCurrentUser();
+                                        createUserInFirebase(user);
+                                        // navigate to the main activity on successful login
+                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                        finish();
+                                    } else {
+                                        error.setText("Email or Password incorrect. Please try again.");
+                                        // handle login failure
+                                    }
                                 }
-                            }
-                        });
-            }
+                            });
+                }
+
         });
         mSignUp = findViewById(R.id.signUp);
         mSignUp.setOnClickListener(new View.OnClickListener() {
@@ -87,34 +98,45 @@ public class LoginActivity extends AppCompatActivity {
             public void onClick(View v) {
                 String email = mEmailField.getText().toString();
                 String password = mPasswordField.getText().toString();
+                if (email.isEmpty() || password.isEmpty())
+                {
+                    error.setText("Please enter a valid email and password");
+                    return;
+                }
+                try{
+                    mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
+                        @Override
+                        public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
+                            boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
 
-                mAuth.fetchSignInMethodsForEmail(email).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
-                    @Override
-                    public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
-                        boolean isNewUser = task.getResult().getSignInMethods().isEmpty();
-
-                        if (isNewUser) {
-                            mAuth.createUserWithEmailAndPassword(email, password)
-                                    .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
-                                        @Override
-                                        public void onComplete(Task<AuthResult> task) {
-                                            if (task.isSuccessful()) {
-                                                FirebaseUser user = mAuth.getCurrentUser();
-                                                createUserInFirebase(user);
-                                                // navigate to the main activity on successful login
-                                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                                finish();
-                                            } else {
-                                                error.setText("Error creating user. Please try again.");
-                                                // handle creating user failure
+                            if (isNewUser) {
+                                mAuth.createUserWithEmailAndPassword(email, password)
+                                        .addOnCompleteListener(new OnCompleteListener<AuthResult>() {
+                                            @Override
+                                            public void onComplete(Task<AuthResult> task) {
+                                                if (task.isSuccessful()) {
+                                                    FirebaseUser user = mAuth.getCurrentUser();
+                                                    createUserInFirebase(user);
+                                                    // navigate to the main activity on successful login
+                                                    startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                                    finish();
+                                                } else {
+                                                    error.setText("Error creating user. Please try again.");
+                                                    // handle creating user failure
+                                                }
                                             }
-                                        }
-                                    });
-                        } else {
-                            error.setText("This email is already in use. Please try again with a different email.");
+                                        });
+                            } else {
+                                error.setText("This email is already in use. Please try again with a different email.");
+                            }
                         }
-                    }
-                });
+                    });
+                }
+                catch (RuntimeException e)
+                {
+                    error.setText("Please put make sure the email is formatted properly");
+                }
+
             }
         });
 

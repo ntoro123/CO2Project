@@ -1,9 +1,24 @@
 package com.example.myapplication.ui.gallery;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.github.mikephil.charting.charts.LineChart;
+import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
+import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
+import com.github.mikephil.charting.utils.Utils;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -16,18 +31,21 @@ import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentGalleryBinding;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
 public class GalleryFragment extends Fragment {
-    EditText cityEditText;
+    LineDataSet dataSet = new LineDataSet(new ArrayList<>(), "Label");
     EditText distanceEditText;
     EditText fuelEditText;
     Button calculateButton;
     TextView resultTextView;
-
+    private LineChart lineChart;
+    FirebaseAuth mAuth;
     FirebaseFirestore db;
     private FragmentGalleryBinding binding;
 
@@ -37,41 +55,59 @@ public class GalleryFragment extends Fragment {
                 binding = FragmentGalleryBinding.inflate(inflater, container, false);
                 View root = binding.getRoot();
 
-                cityEditText = root.findViewById(R.id.cityEditText);
                 distanceEditText = root.findViewById(R.id.distanceEditText);
                 fuelEditText = root.findViewById(R.id.fuelEditText);
                 calculateButton = root.findViewById(R.id.calculateButton);
                 resultTextView = root.findViewById(R.id.resultTextView);
-
                 db = FirebaseFirestore.getInstance();
+                mAuth = FirebaseAuth.getInstance();
 
+                String userId = mAuth.getInstance().getCurrentUser().getUid();
+
+                lineChart = root.findViewById(R.id.lineChart);
+
+                lineChart.setTouchEnabled(true);
+                lineChart.setPinchZoom(true);
+                lineChart.getDescription().setEnabled(false);
                 calculateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        final String cityName = cityEditText.getText().toString();
-                        final double distance = Double.parseDouble(distanceEditText.getText().toString());
-                        final double fuelEfficiency = Double.parseDouble(fuelEditText.getText().toString());
+                        final float distance = (float)Double.parseDouble(distanceEditText.getText().toString());
+                        final float fuelEfficiency = (float)Double.parseDouble(fuelEditText.getText().toString());
+                        float co2Emissions = (distance / fuelEfficiency);
+                        try
+                        {
+                            float xLast = (dataSet.getEntryForIndex(dataSet.getEntryCount()).getX());
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("#ofentries", dataSet.getEntryForIndex((int)xLast + 1));
+                            userData.put("co2Emissions", co2Emissions);
 
-                        db.collection("cities").whereEqualTo("name", cityName).get()
-                                .addOnSuccessListener(new OnSuccessListener<QuerySnapshot>() {
-                                    @Override
-                                    public void onSuccess(QuerySnapshot queryDocumentSnapshots) {
-                                        if (!queryDocumentSnapshots.isEmpty()) {
-                                            DocumentSnapshot documentSnapshot = queryDocumentSnapshots.getDocuments().get(0);
-                                            double co2EmissionsFactor = documentSnapshot.getDouble("co2EmissionsFactor");
-                                            double co2Emissions = (distance / fuelEfficiency) * co2EmissionsFactor;
-                                            resultTextView.setText(String.format("%.2f kg", co2Emissions));
-                                        } else {
-                                            resultTextView.setText("City not found");
-                                        }
-                                    }
-                                })
-                                .addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        resultTextView.setText("Error: " + e.getMessage());
-                                    }
-                                });
+                            DocumentReference userRef = db.collection("users").document(userId);
+
+                            Entry entry = new Entry((xLast + 1), co2Emissions);
+
+
+                            dataSet.addEntry(entry);
+
+                            LineData lineData = new LineData(dataSet);
+
+                            lineChart.setData(lineData);
+
+                            lineChart.invalidate();
+
+                            userRef.set(userData);
+                        }
+                        catch (Exception e)
+                        {
+                            Entry entry = new Entry(1,co2Emissions);
+
+                            dataSet.addEntry(entry);
+                            LineData lineData = new LineData(dataSet);
+
+                            lineChart.setData(lineData);
+                            lineChart.invalidate();
+
+                        }
                     }
                 });
 
