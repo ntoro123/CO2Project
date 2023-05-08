@@ -168,13 +168,11 @@ public class GalleryFragment extends Fragment {
             dataSet.setLineWidth(2f);
             dataSet.setColor(Color.RED);
             dataSet.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-            Legend legend = lineChart.getLegend();
-            legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-
             XAxis xAxis = lineChart.getXAxis();
             xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
             xAxis.setGranularity(1f);
             xAxis.setAxisMinimum(0f);
+            lineChart.getLegend().setEnabled(false);
             lineChart.setData(new LineData(dataSet));
             lineChart.invalidate();
         }
