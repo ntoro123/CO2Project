@@ -12,22 +12,27 @@
         android:layout_height="399dp"
         app:layout_constraintBottom_toTopOf="@+id/distanceEditText"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.444"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.551" />
 
     <EditText
         android:id="@+id/distanceEditText"
+        android:inputType="number"
         android:layout_width="415dp"
         android:layout_height="61dp"
         android:hint="Distance Travelled (in km)"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.668" />
+        app:layout_constraintVertical_bias="0.731" />
 
     <EditText
         android:id="@+id/fuelEditText"
+        android:inputType="number"
         android:layout_width="415dp"
         android:layout_height="61dp"
         android:hint="Fuel Efficiency (in km/l)"
@@ -35,7 +40,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.774" />
+        app:layout_constraintVertical_bias="0.822" />
 
     <Button
         android:id="@+id/calculateButton"
@@ -44,15 +49,17 @@
         android:text="Calculate CO2 Emissions"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.859"
-        tools:layout_editor_absoluteX="16dp" />
+        app:layout_constraintVertical_bias="0.896"
+        tools:layout_editor_absoluteX="4dp" />
 
     <TextView
         android:id="@+id/resultTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:textAlignment="center"
+        android:textColor="#FF0000"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.912"
-        tools:layout_editor_absoluteX="-16dp" />
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/calculateButton" />
 </androidx.constraintlayout.widget.ConstraintLayout>
