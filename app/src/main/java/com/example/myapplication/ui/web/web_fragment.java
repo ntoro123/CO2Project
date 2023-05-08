@@ -80,7 +80,7 @@ public class web_fragment extends Fragment {
 
         String query = qpref.getString("key", "Carbon Footprint Reducing Tips");
 
-        loadUrlFromGoogle(query);
+        //loadUrlFromGoogle(query);
 
         // Load a default URL in the WebView
         webView.loadUrl("https://www.google.com");
@@ -118,7 +118,7 @@ public class web_fragment extends Fragment {
                 int index = (int)(Math.random() * (list.size() - 1));
                 String query = "Tips reduce carbon footprint " + list.get(index);
                 debug.setText("Lucky number: " + index);
-                loadUrlFromGoogle(query);
+                //loadUrlFromGoogle(query);
                 editor.putString("key", query);
                 editor.apply();
                 preferences.edit().putLong("timeLeft", startTime).apply();
@@ -140,7 +140,7 @@ public class web_fragment extends Fragment {
                 try {
                     // Build the URL for the Custom Search JSON API request
                     String cx = "22b68542a8daf40da"; // Replace with your own Custom Search Engine ID
-                    String key = "AIzaSyAqxrfuuJ-gp3lo-pBmCknC6U3gxrQXJMo"; // Replace with your own API key
+                    String key = "AIzaSyAl1hZ8rTfmSfV-l052tigB3jwUneGCJ64"; // Replace with your own API key
                     String url = "https://www.googleapis.com/customsearch/v1?q=" + URLEncoder.encode(query, "UTF-8") + "&cx=" + cx + "&key=" + key;
 
                     // Fetch the search results JSON from the Custom Search JSON API using HttpURLConnection and BufferedReader
