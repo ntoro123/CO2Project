@@ -15,8 +15,8 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentHomeBinding;
 import com.example.myapplication.ui.login.LoginActivity;
+import com.example.myapplication.ui.signup.SignUp;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 public class HomeFragment extends Fragment {
 

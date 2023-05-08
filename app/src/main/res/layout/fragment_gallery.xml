@@ -6,6 +6,17 @@
     android:layout_height="match_parent"
     tools:context=".ui.gallery.GalleryFragment">
 
+    <Button
+        android:id="@+id/last7button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Show Last 7 Entries Only"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.956" />
+
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/lineChart"
         android:layout_width="402dp"
@@ -19,28 +30,29 @@
 
     <EditText
         android:id="@+id/distanceEditText"
-        android:inputType="number"
         android:layout_width="415dp"
         android:layout_height="61dp"
         android:hint="Distance Travelled (in km)"
+        android:inputType="number"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.731" />
+        app:layout_constraintVertical_bias="0.704" />
 
     <EditText
         android:id="@+id/fuelEditText"
-        android:inputType="number"
         android:layout_width="415dp"
         android:layout_height="61dp"
         android:hint="Fuel Efficiency (in km/l)"
+        android:inputType="number"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.822" />
+        app:layout_constraintVertical_bias="0.805" />
 
     <Button
         android:id="@+id/calculateButton"
@@ -48,9 +60,10 @@
         android:layout_height="wrap_content"
         android:text="Calculate CO2 Emissions"
         app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.896"
-        tools:layout_editor_absoluteX="4dp" />
+        app:layout_constraintVertical_bias="0.884" />
 
     <TextView
         android:id="@+id/resultTextView"
@@ -60,6 +73,8 @@
         android:textColor="#FF0000"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calculateButton" />
+        app:layout_constraintTop_toBottomOf="@+id/calculateButton"
+        app:layout_constraintVertical_bias="0.75" />
 </androidx.constraintlayout.widget.ConstraintLayout>
