@@ -1,10 +1,7 @@
 package com.example.myapplication.ui.gallery;
 
-import static android.content.ContentValues.TAG;
-
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -18,7 +15,6 @@ import com.example.myapplication.R;
 import com.example.myapplication.databinding.FragmentGalleryBinding;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
@@ -34,7 +30,6 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class GalleryFragment extends Fragment {
@@ -51,6 +46,8 @@ public class GalleryFragment extends Fragment {
     FirebaseAuth mAuth;
     FirebaseFirestore db;
     DocumentReference userRef;
+    DocumentReference carRef;
+    float efficiency;
     private FragmentGalleryBinding binding;
 
             @Override
@@ -70,6 +67,7 @@ public class GalleryFragment extends Fragment {
 
                 userId = mAuth.getInstance().getCurrentUser().getUid();
                 userRef = db.collection("users").document(userId);
+                carRef = db.collection("carmodels").document("Emissions");
 
                 userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
@@ -77,6 +75,10 @@ public class GalleryFragment extends Fragment {
                         if (documentSnapshot.exists()) {
                             String dataSetStr = documentSnapshot.getString("dataSet");
                             if (dataSetStr != null) {
+                                if (documentSnapshot.contains("caryear"))
+                                {
+                                    //documentSnapshot.getString()
+                                }
                                 stringToLineDataSet(dataSetStr);
 
                             }
