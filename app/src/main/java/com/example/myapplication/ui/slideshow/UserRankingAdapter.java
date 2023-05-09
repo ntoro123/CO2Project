@@ -22,7 +22,7 @@ import java.util.List;
 
 public class UserRankingAdapter extends RecyclerView.Adapter<UserRankingAdapter.UserViewHolder> {
 
-    private static int iter = 1;
+    protected int picker = 1;
     private List<User> userList;
     FirebaseAuth mAuth = FirebaseAuth.getInstance();
     FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -45,8 +45,26 @@ public class UserRankingAdapter extends RecyclerView.Adapter<UserRankingAdapter.
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
-        holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
-        holder.userDriveAverageTextView.setText("Travel Emission Average: " + String.format("%.2f", (float)user.getDriveaverage()));
+        if (picker == 1)
+        {
+            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getDriveaverage()));
+        }
+        else if(picker == 2)
+        {
+            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getElecaverage()));
+        }
+        else if(picker == 3)
+        {
+            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getGasaverage()));
+        }
+        else {
+            holder.userNameTextView.setText("Error");
+            holder.userDriveAverageTextView.setText("Something went wrong");
+        }
+
 
         if (position == 0) {
             holder.itemView.setBackgroundColor(Color.parseColor("#ffd700"));
