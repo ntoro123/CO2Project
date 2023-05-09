@@ -80,7 +80,7 @@ public class web_fragment extends Fragment {
 
         String query = qpref.getString("key", "Carbon Footprint Reducing Tips");
 
-        //loadUrlFromGoogle(query);
+        loadUrlFromGoogle(query);
 
         // Load a default URL in the WebView
         webView.loadUrl("https://www.google.com");
@@ -118,7 +118,7 @@ public class web_fragment extends Fragment {
                 int index = (int)(Math.random() * (list.size() - 1));
                 String query = "Tips reduce carbon footprint " + list.get(index);
                 debug.setText("Lucky number: " + index);
-                //loadUrlFromGoogle(query);
+                loadUrlFromGoogle(query);
                 editor.putString("key", query);
                 editor.apply();
                 preferences.edit().putLong("timeLeft", startTime).apply();

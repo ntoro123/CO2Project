@@ -29,13 +29,11 @@ import com.google.firebase.auth.FirebaseUser;
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private static SharedPreferences mPrefs;
     private TextView error;
     private EditText mEmailField;
     private EditText mPasswordField;
     private Button mLoginButton;
     private Button mSignUp;
-    private static final String PREF_FIRST_LOGIN = "first_login";
 
     public LoginActivity() {
         // Required empty public constructor
@@ -48,7 +46,7 @@ public class LoginActivity extends AppCompatActivity {
         mAuth = FirebaseAuth.getInstance();
 
         FirebaseUser currentUser = mAuth.getCurrentUser();
-        if (currentUser != null) {
+        if (currentUser != null /*&& currentUser.isEmailVerified()*/) {
             // User is already authenticated, start MainActivity
             startActivity(new Intent(LoginActivity.this, MainActivity.class));
             finish();
@@ -75,10 +73,16 @@ public class LoginActivity extends AppCompatActivity {
                                 public void onComplete(Task<AuthResult> task) {
                                     if (task.isSuccessful()) {
                                         FirebaseUser user = mAuth.getCurrentUser();
-                                        createUserInFirebase(user);
+                                        if(user.isEmailVerified())
+                                        {
+                                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                            finish();
+                                        }
+                                        else {
+                                            error.setText("Email not verified yet, please click on the verification link sent");
+                                        }
                                         // navigate to the main activity on successful login
-                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                        finish();
+
                                     } else {
                                         error.setText("Email or Password incorrect. Please try again.");
                                         // handle login failure
@@ -98,8 +102,5 @@ public class LoginActivity extends AppCompatActivity {
 
         // add listener for logout button
 
-    }
-    private void createUserInFirebase(FirebaseUser user) {
-        // create user instance in Firebase database
     }
 }

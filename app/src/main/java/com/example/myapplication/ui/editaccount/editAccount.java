@@ -1,7 +1,5 @@
 package com.example.myapplication.ui.editaccount;
 
-import static java.security.AccessController.getContext;
-
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
@@ -10,6 +8,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
@@ -18,17 +17,17 @@ import com.example.myapplication.ui.login.LoginActivity;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class editAccount extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
+    private EditText upname;
+    private EditText upcity;
     private TextView email;
     private TextView name;
     private TextView city;
@@ -38,6 +37,8 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
     private ArrayAdapter<String> adapter;
     private Button logout;
     private Button lockin;
+    private Button uname;
+    private Button ucity;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
@@ -51,7 +52,12 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
         name = findViewById(R.id.thisname);
         city = findViewById(R.id.thiscity);
         yearmake = findViewById(R.id.carYear);
-        lockin = findViewById(R.id.lockin);
+        lockin = findViewById(R.id.lockin3);
+        upname = findViewById(R.id.updateName);
+        upcity = findViewById(R.id.updateCity);
+        uname = findViewById(R.id.uname);
+        ucity = findViewById(R.id.ucity);
+
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -91,6 +97,20 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
                 startActivity(intent);
                 finish();
 
+            }
+        });
+        uname.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uRef.update("name", upname.getText().toString());
+                name.setText(upname.getText().toString());
+            }
+        });
+        ucity.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                uRef.update("city", upcity.getText().toString());
+                city.setText(upcity.getText().toString());
             }
         });
         lockin.setOnClickListener(new View.OnClickListener() {

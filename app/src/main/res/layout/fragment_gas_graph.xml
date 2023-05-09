@@ -4,10 +4,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ui.gallery.GalleryFragment">
+    tools:context=".ui.gas.gasGraph">
 
     <Button
-        android:id="@+id/last7button"
+        android:id="@+id/last7button3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Show Last 7 Entries Only"
@@ -18,25 +18,11 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintVertical_bias="0.944" />
 
-    <Button
-        android:id="@+id/refresh"
-        android:layout_width="52dp"
-        android:layout_height="52dp"
-        android:background="@drawable/circlebutton"
-        app:icon="@android:drawable/ic_popup_sync"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.955"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.786"
-        android:padding="11dp"/>
-
     <com.github.mikephil.charting.charts.LineChart
-        android:id="@+id/lineChart"
+        android:id="@+id/lineChart3"
         android:layout_width="402dp"
         android:layout_height="399dp"
-        app:layout_constraintBottom_toTopOf="@+id/distanceEditText"
+        app:layout_constraintBottom_toTopOf="@+id/distanceEditText3"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.444"
         app:layout_constraintStart_toStartOf="parent"
@@ -44,10 +30,10 @@
         app:layout_constraintVertical_bias="0.686" />
 
     <EditText
-        android:id="@+id/distanceEditText"
+        android:id="@+id/distanceEditText3"
         android:layout_width="415dp"
         android:layout_height="61dp"
-        android:hint="Distance Travelled (in km) (Multiple Separate by Comma)"
+        android:hint="Therms per month (Multiple Separate by Comma)"
         android:textSize="16sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +43,7 @@
         app:layout_constraintVertical_bias="0.695" />
 
     <Button
-        android:id="@+id/calculateButton"
+        android:id="@+id/calculateButton3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Calculate CO2 Emissions"
@@ -69,7 +55,7 @@
         app:layout_constraintVertical_bias="0.874" />
 
     <TextView
-        android:id="@+id/resultTextView"
+        android:id="@+id/resultTextView3"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:textAlignment="center"
@@ -78,11 +64,11 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/calculateButton"
+        app:layout_constraintTop_toBottomOf="@+id/calculateButton3"
         app:layout_constraintVertical_bias="0.774" />
 
     <TextView
-        android:id="@+id/fueleff"
+        android:id="@+id/fueleff3"
         android:layout_width="320dp"
         android:layout_height="48dp"
         android:textSize="18sp"

@@ -92,7 +92,14 @@ public class SignUp extends AppCompatActivity {
                                                 if (task.isSuccessful()) {
 
                                                     FirebaseUser user = mAuth.getCurrentUser();
-                                                    createUserInFirebase(user);
+                                                    user.sendEmailVerification()
+                                                            .addOnCompleteListener(emailTask -> {
+                                                                if (emailTask.isSuccessful()) {
+                                                                    error.setText("Verification email sent to " + user.getEmail());
+                                                                } else {
+                                                                    error.setText("Verification email seems to have hit an issue");
+                                                                }
+                                                            });
                                                     String uid = user.getUid();
                                                     DocumentReference userRef = FirebaseFirestore.getInstance().collection("users").document(uid);
                                                     userRef.set(data);

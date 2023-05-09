@@ -2,6 +2,8 @@ package com.example.myapplication.ui.gallery;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputFilter;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -33,13 +35,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class GalleryFragment extends Fragment {
+    TextView fefficiency;
+    double fuel;
     int clockwork = 0;
-
+    String theCar;
     String userId;
     LineDataSet dataSet = new LineDataSet(new ArrayList<>(), "Label");
     EditText distanceEditText;
-    EditText fuelEditText;
     Button calculateButton;
+    Button refresh;
     Button last7;
     TextView resultTextView;
     LineChart lineChart;
@@ -47,7 +51,6 @@ public class GalleryFragment extends Fragment {
     FirebaseFirestore db;
     DocumentReference userRef;
     DocumentReference carRef;
-    float efficiency;
     private FragmentGalleryBinding binding;
 
             @Override
@@ -57,30 +60,51 @@ public class GalleryFragment extends Fragment {
                 View root = binding.getRoot();
 
                 distanceEditText = root.findViewById(R.id.distanceEditText);
-                fuelEditText = root.findViewById(R.id.fuelEditText);
+                fefficiency = root.findViewById(R.id.fueleff);
                 calculateButton = root.findViewById(R.id.calculateButton);
                 resultTextView = root.findViewById(R.id.resultTextView);
                 lineChart = root.findViewById(R.id.lineChart);
                 last7 = root.findViewById(R.id.last7button);
                 db = FirebaseFirestore.getInstance();
                 mAuth = FirebaseAuth.getInstance();
+                refresh = root.findViewById(R.id.refresh);
 
                 userId = mAuth.getInstance().getCurrentUser().getUid();
                 userRef = db.collection("users").document(userId);
                 carRef = db.collection("carmodels").document("Emissions");
-
+                InputFilter inputFilter = new InputFilter() {
+                    public CharSequence filter(CharSequence source, int start, int end,
+                                               Spanned dest, int dstart, int dend) {
+                        for (int i = start; i < end; i++) {
+                            if (!Character.isDigit(source.charAt(i)) && source.charAt(i) != ',' && source.charAt(i) != '.') {
+                                return "";
+                            }
+                        }
+                        return null;
+                    }
+                };
+                distanceEditText.setFilters(new InputFilter[] { inputFilter });
                 userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if (documentSnapshot.exists()) {
-                            String dataSetStr = documentSnapshot.getString("dataSet");
+                            String dataSetStr = documentSnapshot.getString("drivedataSet");
+                            if (documentSnapshot.contains("caryear"))
+                            {
+                                theCar = documentSnapshot.getString("caryear");
+                                carRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                    @Override
+                                    public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                        if (documentSnapshot.exists())
+                                        {
+                                            fuel = documentSnapshot.getDouble(theCar);
+                                            fefficiency.setText("Your Car Model: " + theCar + "\nAvg Emission by Grams per km: " + String.format("%.2f", fuel / 1.60934));
+                                        }
+                                    }
+                                });
                             if (dataSetStr != null) {
-                                if (documentSnapshot.contains("caryear"))
-                                {
-                                    //documentSnapshot.getString()
+                                    stringToLineDataSet(dataSetStr);
                                 }
-                                stringToLineDataSet(dataSetStr);
-
                             }
                         }
                     }
@@ -89,27 +113,61 @@ public class GalleryFragment extends Fragment {
 
 
 
-
+                refresh.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                            @Override
+                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                if (documentSnapshot.exists()) {
+                                    String dataSetStr = documentSnapshot.getString("drivedataSet");
+                                    if (documentSnapshot.contains("caryear"))
+                                    {
+                                        theCar = documentSnapshot.getString("caryear");
+                                        carRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                                            @Override
+                                            public void onSuccess(DocumentSnapshot documentSnapshot) {
+                                                if (documentSnapshot.exists())
+                                                {
+                                                    fuel = documentSnapshot.getDouble(theCar);
+                                                    fefficiency.setText("Your Car Model: " + theCar + "\nAvg Emission by Grams per km: " + String.format("%.2f", fuel * 1.60934));
+                                                }
+                                            }
+                                        });
+                                        if (dataSetStr != null) {
+                                            stringToLineDataSet(dataSetStr);
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
                 calculateButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        if (distanceEditText.getText().toString().isEmpty() || fuelEditText.getText().toString().isEmpty()) {
-                            resultTextView.setText("Error please input values");
+                        if (distanceEditText.getText().toString().isEmpty()) {
+                            resultTextView.setText("Error please input a distance");
                             return;
                         }
-                        final float distance = (float) Double.parseDouble(distanceEditText.getText().toString());
-                        final float fuelEfficiency = (float) Double.parseDouble(fuelEditText.getText().toString());
-                        float co2Emissions = (distance / fuelEfficiency);
+                        String[] values = distanceEditText.getText().toString().split(",");
+                        for (int i = 0; i < values.length;i++)
+                        {
+                            final float distance = (float) Double.parseDouble(values[i]);
+                            final float fuelEfficiency = (float) fuel;
+                            float co2Emissions = (distance * (fuelEfficiency / (float)1.60934));
+                            try {
+                                float xLast = 0;
+                                if (dataSet.getEntryCount() > 0) {
+                                    xLast = dataSet.getEntryForIndex(dataSet.getEntryCount() - 1).getX();
+                                }
+                                Entry entry = new Entry(xLast + 1, co2Emissions);
+                                dataSet.addEntry(entry);
 
-                        try {
-                            float xLast = 0;
-                            if (dataSet.getEntryCount() > 0) {
-                                xLast = dataSet.getEntryForIndex(dataSet.getEntryCount() - 1).getX();
+
+                            } catch (Exception e) {
+                                resultTextView.setText("Error");
                             }
-                            Entry entry = new Entry(xLast + 1, co2Emissions);
-                            dataSet.addEntry(entry);
-
-                            LineData lineData = new LineData(dataSet);
                             ValueFormatter customFormatter = new ValueFormatter() {
                                 private final DecimalFormat format = new DecimalFormat("#.##");
                                 @Override
@@ -117,6 +175,24 @@ public class GalleryFragment extends Fragment {
                                     return format.format(value);
                                 }
                             };
+
+                            Map<String, Object> userData = new HashMap<>();
+                            userData.put("drivedataSet", dataSet.toString());
+                            float sum = 0;
+                            int count = 0;
+
+                            for (Entry tentry : dataSet.getValues()) {
+                                sum += tentry.getY();
+                                count++;
+                            }
+
+                            float average = sum / count;
+
+                            userData.put("driveaverage", average);
+
+                            userRef.update(userData);
+
+                            LineData lineData = new LineData(dataSet);
                             dataSet.setDrawValues(false);
                             dataSet.setDrawCircles(false);
                             dataSet.setLineWidth(2f);
@@ -136,26 +212,11 @@ public class GalleryFragment extends Fragment {
                             lineChart.setData(lineData);
                             lineChart.invalidate();
 
-                            Map<String, Object> userData = new HashMap<>();
-                            userData.put("dataSet", dataSet.toString());
 
-                            float sum = 0;
-                            int count = 0;
-
-                            for (Entry tentry : dataSet.getValues()) {
-                                sum += tentry.getY();
-                                count++;
-                            }
-
-                            float average = sum / count;
-
-                            userData.put("average", average);
-
-                            userRef.update(userData);
-
-                        } catch (Exception e) {
-                            resultTextView.setText("Error");
                         }
+
+
+
                     }
                 });
                 last7.setOnClickListener(new View.OnClickListener(){
