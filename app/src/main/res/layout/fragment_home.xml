@@ -4,6 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="#f0ffdc"
     tools:context=".ui.home.HomeFragment">
 
     <com.github.mikephil.charting.charts.LineChart
@@ -76,16 +77,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="From"
-        tools:layout_editor_absoluteX="115dp"
-        tools:layout_editor_absoluteY="91dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.312"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.126" />
 
     <TextView
         android:id="@+id/textView4"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="To"
-        tools:layout_editor_absoluteX="235dp"
-        tools:layout_editor_absoluteY="91dp" />
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.579"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.127" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

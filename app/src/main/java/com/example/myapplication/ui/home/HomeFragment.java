@@ -46,8 +46,6 @@ import java.util.List;
 
 public class HomeFragment extends Fragment {
 
-    Spinner startMonthSpinner;
-    Spinner endMonthSpinner;
     String startMonth;
     String endMonth;
     LineChart lineChart;
@@ -62,7 +60,8 @@ public class HomeFragment extends Fragment {
     private FirebaseFirestore db;
     List<String> months = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun",
             "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
-
+    List<String> emonths = Arrays.asList("All","Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
@@ -75,7 +74,7 @@ public class HomeFragment extends Fragment {
         Spinner endSpinner = root.findViewById(R.id.end_month_spinner);
 
         ArrayAdapter<String> monthAdapter = new ArrayAdapter<>(getContext(),
-                android.R.layout.simple_spinner_item, months);
+                android.R.layout.simple_spinner_item, emonths);
         monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         startSpinner.setAdapter(monthAdapter);
