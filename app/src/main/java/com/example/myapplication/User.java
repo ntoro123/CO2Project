@@ -12,13 +12,14 @@ public class User {
     private String drivedataSet;
     private double elecaverage;
     private boolean isCurrentUser;
+    private boolean privacy;
 
     public User() {
         // Default constructor required for calls to DataSnapshot.getValue(User.class)
     }
 
     public User(String name, String city, double driveaverage, String gasdataSet, double gasaverage,
-                String caryear, String elecdataSet, String drivedataSet, double elecaverage) {
+                String caryear, String elecdataSet, String drivedataSet, double elecaverage, boolean privacy) {
         this.name = name;
         this.city = city;
         this.driveaverage = driveaverage;
@@ -28,6 +29,7 @@ public class User {
         this.elecdataSet = elecdataSet;
         this.drivedataSet = drivedataSet;
         this.elecaverage = elecaverage;
+        this.privacy = privacy;
     }
 
     public String getName() {
@@ -108,5 +110,10 @@ public class User {
 
     public void setCurrentUser(boolean isCurrentUser) {
         this.isCurrentUser = isCurrentUser;
+    }
+
+    public boolean isPrivacy()
+    {
+        return privacy;
     }
 }

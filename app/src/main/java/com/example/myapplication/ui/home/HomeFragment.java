@@ -40,10 +40,16 @@ import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Calendar;
 import java.util.List;
 
-public class HomeFragment extends Fragment{
+public class HomeFragment extends Fragment {
 
+    Spinner startMonthSpinner;
+    Spinner endMonthSpinner;
+    String startMonth;
+    String endMonth;
     LineChart lineChart;
     LineDataSet dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
     LineDataSet dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
@@ -54,6 +60,9 @@ public class HomeFragment extends Fragment{
     private FirebaseAuth mAuth;
     private FirebaseUser currentUser;
     private FirebaseFirestore db;
+    List<String> months = Arrays.asList("Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec");
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         HomeViewModel homeViewModel =
@@ -62,6 +71,16 @@ public class HomeFragment extends Fragment{
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        Spinner startSpinner = root.findViewById(R.id.start_month_spinner);
+        Spinner endSpinner = root.findViewById(R.id.end_month_spinner);
+
+        ArrayAdapter<String> monthAdapter = new ArrayAdapter<>(getContext(),
+                android.R.layout.simple_spinner_item, months);
+        monthAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        startSpinner.setAdapter(monthAdapter);
+        endSpinner.setAdapter(monthAdapter);
+
         lineChart = root.findViewById(R.id.aggreChart);
         mAuth = FirebaseAuth.getInstance();
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
@@ -69,8 +88,36 @@ public class HomeFragment extends Fragment{
         db = FirebaseFirestore.getInstance();
         DocumentReference userRef = db.collection("users").document(uid);
 
-        ValueFormatter customFormatter = new ValueFormatter() {
+
+        startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (endSpinner.getSelectedItem() != null) {
+                    startMonth = startSpinner.getSelectedItem().toString();
+                    endMonth = endSpinner.getSelectedItem().toString();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+            }
+        });
+        endSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                if (startSpinner.getSelectedItem() != null) {
+                    startMonth = startSpinner.getSelectedItem().toString();
+                    endMonth = endSpinner.getSelectedItem().toString();
+                }
+            }
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // Do nothing
+            }
+        });
+
+            ValueFormatter customFormatter = new ValueFormatter() {
             private final DecimalFormat format = new DecimalFormat("#.##");
+
             @Override
             public String getAxisLabel(float value, AxisBase axis) {
                 return format.format(value);
@@ -79,59 +126,68 @@ public class HomeFragment extends Fragment{
         userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
-                dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
-                dataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
-                if (documentSnapshot.exists())
-                {
-                    String drivedataSetStr = documentSnapshot.getString("drivedataSet");
-                    String elecdataSetStr = documentSnapshot.getString("elecdataSet");
-                    String gasdataSetStr = documentSnapshot.getString("gasdataSet");
-                    if (drivedataSetStr != null) {
-                        dataSet1 = stringToLineDataSet(drivedataSetStr);
-                        dataSet1.setColor(Color.RED);
-                        dataSet1.setValueTextColor(Color.BLACK);
-                        dataSet1.setDrawValues(false);
-                        dataSet1.setDrawCircles(false);
-                        dataSet1.setLineWidth(2f);
-                        dataSet1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-                    }
-                    if (elecdataSetStr != null)
-                    {
-                        dataSet2 = stringToLineDataSet(elecdataSetStr);
-                        dataSet2.setColor(Color.BLUE);
-                        dataSet2.setValueTextColor(Color.BLACK);
-                        dataSet2.setDrawValues(false);
-                        dataSet2.setDrawCircles(false);
-                        dataSet2.setLineWidth(2f);
-                        dataSet2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-                    }
-                    if (gasdataSetStr != null)
-                    {
-                        dataSet3 = stringToLineDataSet(gasdataSetStr);
-                        dataSet3.setColor(Color.GREEN);
-                        dataSet3.setValueTextColor(Color.BLACK);
-                        dataSet3.setDrawValues(false);
-                        dataSet3.setDrawCircles(false);
-                        dataSet3.setLineWidth(2f);
-                        dataSet3.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-                    }
-                    XAxis xAxis = lineChart.getXAxis();
-                    xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-                    xAxis.setGranularity(1f);
-                    xAxis.setAxisMinimum(0f);
-                    YAxis leftAxis = lineChart.getAxisLeft();
-                    leftAxis.setValueFormatter(customFormatter);
+                if (startMonth == "All" || endMonth == "All") {
+                    dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
+                    dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
+                    dataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
+                    if (documentSnapshot.exists()) {
+                        String drivedataSetStr = documentSnapshot.getString("drivedataSet");
+                        String elecdataSetStr = documentSnapshot.getString("elecdataSet");
+                        String gasdataSetStr = documentSnapshot.getString("gasdataSet");
+                        if (drivedataSetStr != null) {
+                            dataSet1 = stringToLineDataSet(drivedataSetStr);
+                            dataSet1 = getMonthlyAverages(dataSet1);
+                            dataSet1.setColor(Color.RED);
+                            dataSet1.setValueTextColor(Color.BLACK);
+                            dataSet1.setDrawValues(false);
+                            dataSet1.setDrawCircles(false);
+                            dataSet1.setLineWidth(2f);
+                            dataSet1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        if (elecdataSetStr != null) {
+                            dataSet2 = stringToLineDataSet(elecdataSetStr);
+                            dataSet2.setColor(Color.BLUE);
+                            dataSet2.setValueTextColor(Color.BLACK);
+                            dataSet2.setDrawValues(false);
+                            dataSet2.setDrawCircles(false);
+                            dataSet2.setLineWidth(2f);
+                            dataSet2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        if (gasdataSetStr != null) {
+                            dataSet3 = stringToLineDataSet(gasdataSetStr);
+                            dataSet3.setColor(Color.GREEN);
+                            dataSet3.setValueTextColor(Color.BLACK);
+                            dataSet3.setDrawValues(false);
+                            dataSet3.setDrawCircles(false);
+                            dataSet3.setLineWidth(2f);
+                            dataSet3.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        XAxis xAxis = lineChart.getXAxis();
+                        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                        xAxis.setGranularity(1f);
+                        xAxis.setAxisMinimum(0f);
+                        xAxis.setValueFormatter(new ValueFormatter() {
+                            @Override
+                            public String getAxisLabel(float value, AxisBase axis) {
+                                // Convert the index of the label to the corresponding month name
+                                int index = (int) value;
+                                return months.get(index % 12);
+                            }
+                        });
 
-                    YAxis rightAxis = lineChart.getAxisRight();
-                    rightAxis.setValueFormatter(customFormatter);
-                    lineChart.setVisibleXRangeMinimum(1);
-                    lineChart.getLegend().setEnabled(false);
+                        YAxis leftAxis = lineChart.getAxisLeft();
+                        leftAxis.setValueFormatter(customFormatter);
 
-                    LineData lineData = new LineData(dataSet1, dataSet2, dataSet3);
+                        YAxis rightAxis = lineChart.getAxisRight();
+                        rightAxis.setValueFormatter(customFormatter);
+                        lineChart.setVisibleXRangeMinimum(1);
+                        lineChart.getLegend().setEnabled(false);
 
-                    lineChart.setData(lineData);
-                    lineChart.invalidate();
+                        LineData lineData = new LineData(dataSet1, dataSet2, dataSet3);
+
+                        lineChart.setData(lineData);
+                        lineChart.invalidate();
+                    }
                 }
             }
         });
@@ -144,6 +200,7 @@ public class HomeFragment extends Fragment{
         super.onDestroyView();
         binding = null;
     }
+
     private LineDataSet stringToLineDataSet(String dataSetString) {
         if (dataSetString != null && !dataSetString.isEmpty()) {
             String[] parts = dataSetString.split("Entry, ");
@@ -152,15 +209,58 @@ public class HomeFragment extends Fragment{
                 String[] values = parts[i].split(": ");
                 float x = Float.parseFloat(values[1].split(" ")[0]);
                 float y = Float.parseFloat(values[2]);
-                entries.add(new Entry(x, y));
+                entries.add(new Entry(x - 1, y));
             }
 
             LineDataSet dataSet = new LineDataSet(entries, "");
             return dataSet;
-        }
-        else{
+        } else {
             LineDataSet dataSet = new LineDataSet(new ArrayList<>(), "Label");
             return dataSet;
         }
     }
+
+    public static LineDataSet getMonthlyAverages(LineDataSet oldDataSet) {
+        List<Entry> oldEntries = oldDataSet.getValues();
+        List<Entry> newEntries = new ArrayList<>();
+
+        float sum = 0;
+        int count = 0;
+        int daysInMonth = 0;
+        int currentMonth = -1;
+        int monthCounter = -1;
+
+        for (Entry entry : oldEntries) {
+            long dateInMillis = (long) entry.getX();
+            Calendar cal = Calendar.getInstance();
+            cal.setTimeInMillis(dateInMillis);
+            int month = cal.get(Calendar.MONTH);
+
+            if (currentMonth != month) {
+                daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                currentMonth = month;
+                monthCounter++;
+            }
+
+            sum += entry.getY();
+            count++;
+
+            if (count == daysInMonth) {
+                float avg = sum / count;
+                newEntries.add(new Entry(monthCounter++, avg));
+                sum = 0;
+                count = 0;
+            }
+        }
+
+        if (count > 0) {
+            float avg = sum / count;
+            newEntries.add(new Entry(monthCounter, avg));
+        }
+
+        LineDataSet newDataSet = new LineDataSet(newEntries, oldDataSet.getLabel());
+        return newDataSet;
+    }
+
+
 }

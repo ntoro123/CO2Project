@@ -1,28 +1,39 @@
 package com.example.myapplication.ui.editaccount;
 
+import static androidx.fragment.app.FragmentManager.TAG;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.myapplication.R;
 import com.example.myapplication.ui.login.LoginActivity;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class editAccount extends AppCompatActivity implements AdapterView.OnItemSelectedListener{
 
@@ -35,10 +46,13 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
     private Spinner year;
     private List<String> list;
     private ArrayAdapter<String> adapter;
+    private CheckBox checkbox;
     private Button logout;
     private Button lockin;
     private Button uname;
     private Button ucity;
+    private Button deleteDataButton;
+    private boolean isChecked = false;
     private FirebaseAuth mAuth;
     private FirebaseFirestore db;
     private FirebaseUser currentUser;
@@ -57,7 +71,8 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
         upcity = findViewById(R.id.updateCity);
         uname = findViewById(R.id.uname);
         ucity = findViewById(R.id.ucity);
-
+        checkbox = findViewById(R.id.checkbox);
+        deleteDataButton = findViewById(R.id.deletedata);
 
         mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
@@ -75,7 +90,25 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
         adapter = new ArrayAdapter<>(getApplicationContext(), android.R.layout.simple_spinner_item, list);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         year.setAdapter(adapter);
+        deleteDataButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Map<String, Object> updates = new HashMap<>();
+                updates.put("drivedataSet", FieldValue.delete());
+                updates.put("elecdataSet", FieldValue.delete());
+                updates.put("gasdataSet", FieldValue.delete());
 
+                db.collection("users").document(currentUser.getUid()).set(updates, SetOptions.merge());
+
+            }
+        });
+        checkbox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                uRef.update("privacy",isChecked);
+
+            }
+        });
         year.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parentView, View selectedItemView, int position, long id) {
@@ -138,6 +171,8 @@ public class editAccount extends AppCompatActivity implements AdapterView.OnItem
                     {
                         yearmake.setText(documentSnapshot.getString("caryear"));
                     }
+                    boolean isPrivacyChecked = documentSnapshot.getBoolean("privacy");
+                    checkbox.setChecked(isPrivacyChecked);
                 }
             }
         });

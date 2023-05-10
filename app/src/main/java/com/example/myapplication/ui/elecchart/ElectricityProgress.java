@@ -160,7 +160,7 @@ public class ElectricityProgress extends Fragment {
                     lineChart.getLegend().setEnabled(false);
                     lineChart.setData(lineData);
                     lineChart.invalidate();
-
+                    distanceEditText.setText("");
                 }
 
 

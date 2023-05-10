@@ -24,10 +24,6 @@ public class UserRankingAdapter extends RecyclerView.Adapter<UserRankingAdapter.
 
     protected int picker = 1;
     private List<User> userList;
-    FirebaseAuth mAuth = FirebaseAuth.getInstance();
-    FirebaseFirestore db = FirebaseFirestore.getInstance();
-    FirebaseUser currentUser;
-    CollectionReference userRef = db.collection("users");
 
     public UserRankingAdapter(List<User> userList) {
         this.userList = userList;
@@ -45,24 +41,24 @@ public class UserRankingAdapter extends RecyclerView.Adapter<UserRankingAdapter.
     @Override
     public void onBindViewHolder(@NonNull UserViewHolder holder, int position) {
         User user = userList.get(position);
+        if (user.isPrivacy())
+        {
+            holder.userNameTextView.setText("#" + (position + 1) + " " + "Anonymous");
+        }
+        else {
+            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
+        }
         if (picker == 1)
         {
-            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
-            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getDriveaverage()));
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getDriveaverage()) + " Grams");
         }
         else if(picker == 2)
         {
-            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
-            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getElecaverage()));
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getElecaverage() / 1000) + " Kg");
         }
         else if(picker == 3)
         {
-            holder.userNameTextView.setText("#" + (position + 1) + " " + user.getName());
-            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getGasaverage()));
-        }
-        else {
-            holder.userNameTextView.setText("Error");
-            holder.userDriveAverageTextView.setText("Something went wrong");
+            holder.userDriveAverageTextView.setText("Emission Average: " + String.format("%.2f", (float)user.getGasaverage() / 1000) + " Kg");
         }
 
 

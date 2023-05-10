@@ -80,6 +80,7 @@ public class SignUp extends AppCompatActivity {
                     data.put("city", city.getText().toString());
                     data.put("name", name.getText().toString());
                     data.put("caryear", "2000");
+                    data.put("isChecked", false);
                     mAuth.fetchSignInMethodsForEmail(temail).addOnCompleteListener(new OnCompleteListener<SignInMethodQueryResult>() {
                         @Override
                         public void onComplete(@NonNull Task<SignInMethodQueryResult> task) {
