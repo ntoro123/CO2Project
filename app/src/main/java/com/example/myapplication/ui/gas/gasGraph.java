@@ -169,27 +169,13 @@ public class gasGraph extends Fragment {
             @Override
             public void onClick(View v)
             {
-                float xLast = 0;
-                if (dataSet.getEntryCount() > 0) {
-                    xLast = dataSet.getEntryForIndex(dataSet.getEntryCount() - 1).getX();
-                }
-                if (clockwork % 2 == 0)
+                if (dataSet != null && dataSet.getEntryCount() > 0)
                 {
-                    float visibleRangeMaximum = xLast + 1;
-                    float visibleRangeMinimum = visibleRangeMaximum - 7;
-                    lineChart.setVisibleXRangeMaximum(visibleRangeMaximum);
-                    lineChart.setVisibleXRangeMinimum(visibleRangeMinimum);
-                    lineChart.invalidate();
-
-                }
-                else if (clockwork % 2 == 1)
-                {
-                    float visibleRangeMinimum = 0;
-                    lineChart.setVisibleXRangeMinimum(visibleRangeMinimum);
+                    dataSet.removeEntry(dataSet.getEntryCount()-1);
+                    LineData lineData = new LineData(dataSet);
+                    lineChart.setData(lineData);
                     lineChart.invalidate();
                 }
-
-                clockwork++;
             }
         });
         return root;

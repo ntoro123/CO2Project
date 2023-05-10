@@ -11,7 +11,7 @@
         android:id="@+id/last7button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Show Last 7 Entries Only"
+        android:text="Delete Last Entry"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"

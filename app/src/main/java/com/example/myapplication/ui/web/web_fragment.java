@@ -83,7 +83,7 @@ public class web_fragment extends Fragment {
         loadUrlFromGoogle(query);
 
         // Load a default URL in the WebView
-        webView.loadUrl("https://www.google.com");
+        webView.loadUrl("https://www.austintexas.gov/blog/top-10-ways-reduce-your-carbon-footprint-and-save-money");
 
 
         clock = rootView.findViewById(R.id.Test_text);

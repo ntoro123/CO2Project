@@ -39,20 +39,24 @@ import com.google.firebase.firestore.FirebaseFirestore;
 import org.w3c.dom.Text;
 
 import java.text.DecimalFormat;
+import java.time.temporal.ValueRange;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.List;
 
 public class HomeFragment extends Fragment {
 
+    TextView error;
     String startMonth;
     String endMonth;
+    ValueFormatter customFormatter;
     LineChart lineChart;
     LineDataSet dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
     LineDataSet dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
     LineDataSet dataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
-
+    DocumentReference userRef;
     private FragmentHomeBinding binding;
 
     private FirebaseAuth mAuth;
@@ -85,36 +89,10 @@ public class HomeFragment extends Fragment {
         currentUser = FirebaseAuth.getInstance().getCurrentUser();
         String uid = currentUser.getUid();
         db = FirebaseFirestore.getInstance();
-        DocumentReference userRef = db.collection("users").document(uid);
+        userRef = db.collection("users").document(uid);
+        error = root.findViewById(R.id.errortext);
 
-
-        startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (endSpinner.getSelectedItem() != null) {
-                    startMonth = startSpinner.getSelectedItem().toString();
-                    endMonth = endSpinner.getSelectedItem().toString();
-                }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-            }
-        });
-        endSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                if (startSpinner.getSelectedItem() != null) {
-                    startMonth = startSpinner.getSelectedItem().toString();
-                    endMonth = endSpinner.getSelectedItem().toString();
-                }
-            }
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                // Do nothing
-            }
-        });
-
-            ValueFormatter customFormatter = new ValueFormatter() {
+        customFormatter = new ValueFormatter() {
             private final DecimalFormat format = new DecimalFormat("#.##");
 
             @Override
@@ -125,7 +103,172 @@ public class HomeFragment extends Fragment {
         userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
             @Override
             public void onSuccess(DocumentSnapshot documentSnapshot) {
-                if (startMonth == "All" || endMonth == "All") {
+                    dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
+                    dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
+                    dataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
+                    if (documentSnapshot.exists()) {
+                        String drivedataSetStr = documentSnapshot.getString("drivedataSet");
+                        String elecdataSetStr = documentSnapshot.getString("elecdataSet");
+                        String gasdataSetStr = documentSnapshot.getString("gasdataSet");
+                        if (drivedataSetStr != null) {
+                            dataSet1 = stringToLineDataSet(drivedataSetStr);
+                            dataSet1 = getMonthlyAverages(dataSet1);
+                            dataSet1.setColor(Color.RED);
+                            dataSet1.setValueTextColor(Color.BLACK);
+                            dataSet1.setDrawValues(false);
+                            dataSet1.setDrawCircles(false);
+                            dataSet1.setLineWidth(2f);
+                            dataSet1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        if (elecdataSetStr != null) {
+                            dataSet2 = stringToLineDataSet(elecdataSetStr);
+                            dataSet2.setColor(Color.BLUE);
+                            dataSet2.setValueTextColor(Color.BLACK);
+                            dataSet2.setDrawValues(false);
+                            dataSet2.setDrawCircles(false);
+                            dataSet2.setLineWidth(2f);
+                            dataSet2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        if (gasdataSetStr != null) {
+                            dataSet3 = stringToLineDataSet(gasdataSetStr);
+                            dataSet3.setColor(Color.GREEN);
+                            dataSet3.setValueTextColor(Color.BLACK);
+                            dataSet3.setDrawValues(false);
+                            dataSet3.setDrawCircles(false);
+                            dataSet3.setLineWidth(2f);
+                            dataSet3.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+                        }
+                        XAxis xAxis = lineChart.getXAxis();
+                        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+                        xAxis.setGranularity(1f);
+                        xAxis.setAxisMinimum(0f);
+                        xAxis.setValueFormatter(new ValueFormatter() {
+                            @Override
+                            public String getAxisLabel(float value, AxisBase axis) {
+                                // Convert the index of the label to the corresponding month name
+                                int index = (int) value + 1;
+                                return months.get((index % 12));
+                            }
+                        });
+
+                        startSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                String startMonth = (String) parent.getItemAtPosition(position);
+                                String endMonth = (String) endSpinner.getSelectedItem();
+                                filterByMonth(startMonth, endMonth);
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+                                // Do nothing
+                            }
+                        });
+                        endSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                            @Override
+                            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                                String startMonth = (String) startSpinner.getSelectedItem();
+                                String endMonth = (String) parent.getItemAtPosition(position);
+                                filterByMonth(startMonth, endMonth);
+                            }
+
+                            @Override
+                            public void onNothingSelected(AdapterView<?> parent) {
+                                // Do nothing
+                            }
+                        });
+
+                        YAxis leftAxis = lineChart.getAxisLeft();
+                        leftAxis.setValueFormatter(customFormatter);
+
+                        YAxis rightAxis = lineChart.getAxisRight();
+                        rightAxis.setValueFormatter(customFormatter);
+                        lineChart.setVisibleXRangeMinimum(1);
+                        lineChart.getLegend().setEnabled(false);
+
+                        LineData lineData = new LineData(dataSet1, dataSet2, dataSet3);
+                        lineChart.setData(lineData);
+                        lineChart.invalidate();
+                    }
+                }
+        });
+
+        return root;
+    }
+
+    private void filterByMonth(String startMonth, String endMonth) {
+        if (!startMonth.equals("All") && !endMonth.equals("All")) {
+            int startIndex = months.indexOf(startMonth);
+            int endIndex = months.indexOf(endMonth);
+            LineDataSet tempdataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
+            LineDataSet tempdataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
+            LineDataSet tempdataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
+            tempdataSet1 = getMonthlyAverages(tempdataSet1);
+            tempdataSet1.setColor(Color.RED);
+            tempdataSet1.setValueTextColor(Color.BLACK);
+            tempdataSet1.setDrawValues(false);
+            tempdataSet1.setDrawCircles(false);
+            tempdataSet1.setLineWidth(2f);
+            tempdataSet1.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+            tempdataSet2 = getMonthlyAverages(tempdataSet2);
+            tempdataSet2.setColor(Color.BLUE);
+            tempdataSet2.setValueTextColor(Color.BLACK);
+            tempdataSet2.setDrawValues(false);
+            tempdataSet2.setDrawCircles(false);
+            tempdataSet2.setLineWidth(2f);
+            tempdataSet2.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+            tempdataSet3 = getMonthlyAverages(tempdataSet3);
+            tempdataSet3.setColor(Color.GREEN);
+            tempdataSet3.setValueTextColor(Color.BLACK);
+            tempdataSet3.setDrawValues(false);
+            tempdataSet3.setDrawCircles(false);
+            tempdataSet3.setLineWidth(2f);
+            tempdataSet3.setMode(LineDataSet.Mode.CUBIC_BEZIER);
+
+            tempdataSet1.setValues(filterEntries(dataSet1.getValues(), startIndex, endIndex));
+            tempdataSet2.setValues(filterEntries(dataSet2.getValues(), startIndex, endIndex));
+            tempdataSet3.setValues(filterEntries(dataSet3.getValues(), startIndex, endIndex));
+            ValueFormatter customFormatter = new ValueFormatter() {
+                private final DecimalFormat format = new DecimalFormat("#.##");
+
+                @Override
+                public String getAxisLabel(float value, AxisBase axis) {
+                    return format.format(value);
+                }
+            };
+            XAxis xAxis = lineChart.getXAxis();
+            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+            xAxis.setGranularity(1f);
+            xAxis.setAxisMinimum(0f);
+            xAxis.setValueFormatter(new ValueFormatter() {
+                @Override
+                public String getAxisLabel(float value, AxisBase axis) {
+                    // Convert the index of the label to the corresponding month name
+                    int index = (int) value;
+                    return months.get(index % 12);
+                }
+            });
+
+            YAxis leftAxis = lineChart.getAxisLeft();
+            leftAxis.setValueFormatter(customFormatter);
+
+            YAxis rightAxis = lineChart.getAxisRight();
+            rightAxis.setValueFormatter(customFormatter);
+            lineChart.setVisibleXRangeMinimum(1);
+            lineChart.getLegend().setEnabled(false);
+
+            LineData lineData = new LineData(tempdataSet1, tempdataSet2, tempdataSet3);
+            lineChart.setData(lineData);
+            lineChart.invalidate();
+        }
+        else if (startMonth.equals("All") && endMonth.equals("All"))
+        {
+
+            userRef.get().addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
+                @Override
+                public void onSuccess(DocumentSnapshot documentSnapshot) {
                     dataSet1 = new LineDataSet(new ArrayList<Entry>(), "DataSet 1");
                     dataSet2 = new LineDataSet(new ArrayList<Entry>(), "DataSet 2");
                     dataSet3 = new LineDataSet(new ArrayList<Entry>(), "DataSet 3");
@@ -183,17 +326,57 @@ public class HomeFragment extends Fragment {
                         lineChart.getLegend().setEnabled(false);
 
                         LineData lineData = new LineData(dataSet1, dataSet2, dataSet3);
-
                         lineChart.setData(lineData);
                         lineChart.invalidate();
                     }
                 }
-            }
-        });
+            });
+        }
+    }
+    private List<Entry> filterEntries(List<Entry> entries, int startMonth, int endMonth) {
+        List<Entry> filteredEntries = new ArrayList<>();
 
-        return root;
+        // Calculate the number of months between startMonth and endMonth
+        int numMonths = endMonth - startMonth + 1;
+        if (numMonths < 1) {
+            numMonths += 12;
+        }
+
+        // Initialize the filtered entries list with null values
+        for (int i = 0; i < numMonths; i++) {
+            filteredEntries.add(null);
+        }
+
+        // Iterate over the entries and add the values for the specified months
+        for (int i = 0; i < entries.size(); i++) {
+            Entry entry = entries.get(i);
+            int month = getMonthFromXValue(entry.getX()) - 1; // Subtract 1 to use January as 0
+            if (isMonthInRange(month, startMonth, endMonth)) {
+                // Calculate the index of the month in the filtered entries list
+                int filteredIndex = (month - startMonth + numMonths) % numMonths;
+                filteredEntries.set(filteredIndex, entry);
+            }
+        }
+
+        // Remove any null values from the filtered entries list
+        filteredEntries.removeAll(Collections.singleton(null));
+
+        return filteredEntries;
     }
 
+
+    private int getMonthFromXValue(float xValue) {
+        // Assuming xValue is an integer representing the month (January = 1, February = 2, etc.)
+        return (int) xValue;
+    }
+
+    private boolean isMonthInRange(int month, int startMonth, int endMonth) {
+        if (startMonth <= endMonth) {
+            return month >= startMonth && month <= endMonth;
+        } else {
+            return month >= startMonth || month <= endMonth;
+        }
+    }
     @Override
     public void onDestroyView() {
         super.onDestroyView();
