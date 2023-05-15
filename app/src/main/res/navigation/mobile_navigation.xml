@@ -10,17 +10,21 @@
         android:name="com.example.myapplication.ui.home.HomeFragment"
         android:label="@string/menu_home"
         tools:layout="@layout/fragment_home" />
-
+    <fragment
+        android:id="@+id/nav_gas"
+        android:name="com.example.myapplication.ui.gas.gasGraph"
+        android:label="Gas/Heat Emissions Progress Graph"
+        tools:layout="@layout/fragment_gas_graph" />
     <fragment
         android:id="@+id/nav_gallery"
         android:name="com.example.myapplication.ui.gallery.GalleryFragment"
-        android:label="Statistics"
+        android:label="Driving Emissions Progress Graph"
         tools:layout="@layout/fragment_gallery" />
 
     <fragment
         android:id="@+id/nav_slideshow"
         android:name="com.example.myapplication.ui.slideshow.SlideshowFragment"
-        android:label="Graphs"
+        android:label="Statistics"
         tools:layout="@layout/fragment_slideshow" />
 
     <fragment
@@ -28,4 +32,10 @@
         android:name="com.example.myapplication.ui.web.web_fragment"
         android:label="Tips for the Day!"
         tools:layout="@layout/fragment_web_fragment" />
+
+    <fragment
+        android:id="@id/nav_electric"
+        android:name="com.example.myapplication.ui.elecchart.ElectricityProgress"
+        android:label="Electricity Emissions Progress Graph"
+        tools:layout="@layout/fragment_electricity_progress" />
 </navigation>
