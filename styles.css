@@ -126,7 +126,6 @@ h2 {
 }
 
 .team-members img {
-    display: block;
     width: 10em;
     height: 10em;
     object-fit: cover;
@@ -147,8 +146,12 @@ h2 {
     color: #999;
 }
 
-section video {
-    display: block;
-    margin: 1em auto;
-    max-width: 100%;
-}
+.video {
+    display: inline-block;
+    background-color: #007bff;
+    color: #fff;
+    padding: 1em;
+    text-decoration: none;
+    border-radius: 0.25em;
+    margin-bottom: 1em;
+  }
