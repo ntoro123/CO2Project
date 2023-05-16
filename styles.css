@@ -1,0 +1,67 @@
+/* Reset styles */
+html, body, header, nav, main, section, article, aside, footer {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	font: inherit;
+	vertical-align: baseline;
+}
+
+/* Global styles */
+body {
+	font-family: Arial, sans-serif;
+	background-color: #f5f5f5;
+	color: #333;
+	line-height: 1.5;
+}
+
+header {
+	background-color: #333;
+	color: #fff;
+	padding: 1em;
+	text-align: center;
+}
+
+nav {
+	background-color: #666;
+	color: #fff;
+	padding: 1em;
+}
+
+nav ul {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+nav li {
+	display: inline-block;
+	margin-right: 1em;
+}
+
+nav li:last-child {
+	margin-right: 0;
+}
+
+nav a {
+	color: #fff;
+	text-decoration: none;
+}
+
+nav a:hover {
+	color: #ff0;
+}
+
+main {
+	max-width: 800px;
+	margin: 2em auto;
+	padding: 0 1em;
+}
+
+section {
+	margin-bottom: 2em;
+}
+
+h1, h2 {
+	font-size: 2em
